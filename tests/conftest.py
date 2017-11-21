@@ -146,12 +146,14 @@ class TestObjectPytestPlugin(object):
 
         else:
             raise TestObjectError(suite.reason, suite.request.body)
+
+        # request.instance.suite_report = self.suite_report
         
         yield self.suite_report
 
 
-    @pytest.fixture(scope='function')
-    def to_driver(self, request, test_config):
+    @pytest.fixture
+    def to_driver(self, request, test_config, to_suite):
 
         desired_caps = {}
         url = None
@@ -161,7 +163,14 @@ class TestObjectPytestPlugin(object):
         device_id = test_config['deviceId']
         data_center_id = test_config['dataCenterId']
 
-        test_report = self.suite_report.find_test_report(class_name, method_name, device_id, data_center_id)
+        log.debug(class_name)
+        log.debug(method_name)
+        log.debug(device_id)
+        log.debug(data_center_id)
+
+
+        test_report = to_suite.find_test_report(class_name, method_name, device_id, data_center_id)
+        log.debug("test_report is None: {}".format(test_report is None))
 
 
         if data_center_id is 'US':
@@ -170,11 +179,13 @@ class TestObjectPytestPlugin(object):
             url = 'https://eu1.appium.testobject.com/wd/hub'
 
         if test_report:
+            log.debug("test report found")
             test_report_id = test_report.get_id()
+            print("test report id: {}".format(test_report_id))
 
-            desired_caps['testobject_api_key'] = self.api_key
+            desired_caps['testobject_api_key'] = "4CA4D28AD5CD457D9EFC763D91BEA521" #TODO: DONT HARDCODE
             desired_caps['testobject_device'] = device_id
-            desired_caps['testobject_test_report_id'] = test_report_id
+            desired_caps['testobject_test_report_id'] = str(test_report_id)
 
             request.instance.driver = appium.webdriver.Remote(url, desired_caps)
 
@@ -182,6 +193,8 @@ class TestObjectPytestPlugin(object):
             def teardown():
                 request.instance.driver.quit()
                 request.addfinalizer(teardown)
+        else:
+            log.debug("Couldn't find a match")
 
 
         # Grab test config
@@ -201,8 +214,14 @@ class SuiteReport(object):
             test_device_id = test_report.get_device_id()
             test_data_center_id = test_report.get_data_center_id()
 
-            if test_class_name is class_name and test_method_name is method_name and test_device_id is device_id and test_data_center_id is data_center_id:
-                log.debug("Match found {}", test_report)
+            log.debug("class name: {} and {}".format(test_class_name, class_name))
+            log.debug("method name: {} and {}".format(test_method_name, method_name))
+            log.debug("device id: {} and {}".format(test_device_id, device_id))
+            log.debug("datacenter id: {} and {}".format(test_data_center_id, data_center_id))
+
+
+            if test_class_name == class_name and test_method_name == method_name and test_device_id == device_id and test_data_center_id == data_center_id:
+                log.debug("Match found {}".format(test_report))
                 return test_report
 
         return None
