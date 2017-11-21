@@ -147,22 +147,46 @@ class TestObjectPytestPlugin(object):
         else:
             raise TestObjectError(suite.reason, suite.request.body)
         
-        # Start the suite process
-        # Create TestReport for each response
-        # Start SuiteReport and add all testreports 
-        # yield SuiteReport instance
-
         yield self.suite_report
 
 
     @pytest.fixture(scope='function')
     def to_driver(self, request, test_config):
 
+        desired_caps = {}
+        url = None
+
+        class_name = request.cls.__name__
+        method_name = request.node.originalname
+        device_id = test_config['deviceId']
+        data_center_id = test_config['dataCenterId']
+
+        test_report = self.suite_report.find_test_report(class_name, method_name, device_id, data_center_id)
+
+
+        if data_center_id is 'US':
+            url = 'https://us1.appium.testobject.com/wd/hub'
+        else:
+            url = 'https://eu1.appium.testobject.com/wd/hub'
+
+        if test_report:
+            test_report_id = test_report.get_id()
+
+            desired_caps['testobject_api_key'] = self.api_key
+            desired_caps['testobject_device'] = device_id
+            desired_caps['testobject_test_report_id'] = test_report_id
+
+            request.instance.driver = appium.webdriver.Remote(url, desired_caps)
+
+        #ADD FINALIZER INSTEAD OF YIELD
+            def teardown():
+                request.instance.driver.quit()
+                request.addfinalizer(teardown)
+
+
         # Grab test config
         # Grab suite_report and call find_test_report
         # Start remote web driver and yield it
-
-        return
 
 class SuiteReport(object):
 
