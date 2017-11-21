@@ -81,8 +81,8 @@ class TestObjectPytestPlugin(object):
             for datacenter in datacenter_ids:
                 for device_descriptor in datacenter['deviceDescriptorIds']:
                     device_descriptors = {}
-                    device_descriptors['datacenter_id'] = datacenter['dataCenterId']
-                    device_descriptors['device_name'] = device_descriptor
+                    device_descriptors['dataCenterId'] = datacenter['dataCenterId']
+                    device_descriptors['deviceId'] = device_descriptor
                     devices.append(device_descriptors)
             log.debug("FORMATTED DEVICES ARE:")
             log.debug(devices)
@@ -122,12 +122,37 @@ class TestObjectPytestPlugin(object):
                 suite_request.append(temp_request)
         log.debug("Suite request is: {}".format(suite_request))
 
+        to_instance = to.TestObject(self.username, self.api_key)
+
+        suite = to_instance.suites.start_suite(self.suite_id, suite_request)
+
+        if suite.ok:
+            log.debug("Suite returned successfully")
+            test_list = []
+            response = suite.json()
+            suite_report_id = response['id']
+            for test in response['testReports']:
+                
+                test_id = test['id']
+                class_name = test['test']['className']
+                method_name = test['test']['methodName']
+                device_id = test['test']['deviceId']
+                data_center_id = test['test']['dataCenterId']
+                
+                test_report = TestReport(class_name, method_name, device_id, data_center_id, test_id)
+                test_list.append(test_report)
+
+            self.suite_report = SuiteReport(suite_report_id, test_list)
+
+        else:
+            raise TestObjectError(suite.reason, suite.request.body)
         
         # Start the suite process
         # Create TestReport for each response
         # Start SuiteReport and add all testreports 
+        # yield SuiteReport instance
 
-        return
+        yield self.suite_report
 
 
     @pytest.fixture(scope='function')
@@ -135,7 +160,8 @@ class TestObjectPytestPlugin(object):
 
         # Grab test config
         # Grab suite_report and call find_test_report
-        # Start remote web driver
+        # Start remote web driver and yield it
+
         return
 
 class SuiteReport(object):
@@ -151,12 +177,11 @@ class SuiteReport(object):
             test_device_id = test_report.get_device_id()
             test_data_center_id = test_report.get_data_center_id()
 
-            #TODO Check this works
             if test_class_name is class_name and test_method_name is method_name and test_device_id is device_id and test_data_center_id is data_center_id:
                 log.debug("Match found {}", test_report)
                 return test_report
 
-        raise None
+        return None
 
 class TestReport(object):
 
