@@ -151,12 +151,14 @@ class TestObjectPytestPlugin(object):
         
         yield self.suite_report
 
+        to_instance.suites.stop_suite(suite_id, suite_report_id)
 
     @pytest.fixture
     def to_driver(self, request, test_config, to_suite):
 
         desired_caps = {}
         url = None
+        browser = None
 
         class_name = request.cls.__name__
         method_name = request.node.originalname
@@ -170,10 +172,9 @@ class TestObjectPytestPlugin(object):
 
 
         test_report = to_suite.find_test_report(class_name, method_name, device_id, data_center_id)
-        log.debug("test_report is None: {}".format(test_report is None))
 
 
-        if data_center_id is 'US':
+        if data_center_id == 'US':
             url = 'https://us1.appium.testobject.com/wd/hub'
         else:
             url = 'https://eu1.appium.testobject.com/wd/hub'
@@ -187,11 +188,16 @@ class TestObjectPytestPlugin(object):
             desired_caps['testobject_device'] = device_id
             desired_caps['testobject_test_report_id'] = str(test_report_id)
 
-            request.instance.driver = appium.webdriver.Remote(url, desired_caps)
+            log.debug(desired_caps)
+            log.debug("starting remote webdriver...")
+
+            browser = appium.webdriver.Remote(url, desired_caps)
+
+            yield browser
 
         #ADD FINALIZER INSTEAD OF YIELD
             def teardown():
-                request.instance.driver.quit()
+                browser.quit()
                 request.addfinalizer(teardown)
         else:
             log.debug("Couldn't find a match")
@@ -213,11 +219,6 @@ class SuiteReport(object):
             test_method_name = test_report.get_method_name()
             test_device_id = test_report.get_device_id()
             test_data_center_id = test_report.get_data_center_id()
-
-            log.debug("class name: {} and {}".format(test_class_name, class_name))
-            log.debug("method name: {} and {}".format(test_method_name, method_name))
-            log.debug("device id: {} and {}".format(test_device_id, device_id))
-            log.debug("datacenter id: {} and {}".format(test_data_center_id, data_center_id))
 
 
             if test_class_name == class_name and test_method_name == method_name and test_device_id == device_id and test_data_center_id == data_center_id:
