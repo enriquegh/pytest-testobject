@@ -142,7 +142,7 @@ class TestObjectPytestPlugin(object):
                 test_report = TestReport(class_name, method_name, device_id, data_center_id, test_id)
                 test_list.append(test_report)
 
-            self.suite_report = SuiteReport(suite_report_id, test_list)
+            self.suite_report = SuiteReport(suite_report_id, test_list, self.api_key)
 
         else:
             raise TestObjectError(suite.reason, suite.request.body)
@@ -151,7 +151,7 @@ class TestObjectPytestPlugin(object):
         
         yield self.suite_report
 
-        to_instance.suites.stop_suite(suite_id, suite_report_id)
+        to_instance.suites.stop_suite(self.suite_id, suite_report_id)
 
     @pytest.fixture
     def to_driver(self, request, test_config, to_suite):
@@ -184,7 +184,7 @@ class TestObjectPytestPlugin(object):
             test_report_id = test_report.get_id()
             print("test report id: {}".format(test_report_id))
 
-            desired_caps['testobject_api_key'] = "4CA4D28AD5CD457D9EFC763D91BEA521" #TODO: DONT HARDCODE
+            desired_caps['testobject_api_key'] = to_suite.api_key
             desired_caps['testobject_device'] = device_id
             desired_caps['testobject_test_report_id'] = str(test_report_id)
 
@@ -195,10 +195,13 @@ class TestObjectPytestPlugin(object):
 
             yield browser
 
+
+
         #ADD FINALIZER INSTEAD OF YIELD
             def teardown():
                 browser.quit()
-                request.addfinalizer(teardown)
+            log.debug("Tearing test down")
+            request.addfinalizer(teardown)
         else:
             log.debug("Couldn't find a match")
 
@@ -209,9 +212,10 @@ class TestObjectPytestPlugin(object):
 
 class SuiteReport(object):
 
-    def __init__(self, suite_report_id, test_reports):
+    def __init__(self, suite_report_id, test_reports, api_key):
         self.suite_report_id = suite_report_id
         self.test_reports = test_reports
+        self.api_key = api_key
 
     def find_test_report(self, class_name, method_name, device_id, data_center_id):
         for test_report in self.test_reports:
