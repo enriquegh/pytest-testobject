@@ -18,7 +18,7 @@ class TestObjectCredentialError(Exception):
 
 
 def pytest_addoption(parser):
-    group = parser.getgroup('pytest-testobject')
+    group = parser.getgroup('testobject')
     group.addoption('--to-username',
                     action='store',
                     dest='testobject_username',
@@ -57,7 +57,8 @@ def pytest_configure(config):
             log.debug("Grabbing {} from flag. Result: {}".format("testobject_suite_id",testobject_suite_id))
 
         if not (testobject_username and testobject_api_key and testobject_suite_id):
-            raise TestObjectCredentialError
+            # raise TestObjectCredentialError
+            pass
 
         assert config.pluginmanager.register(TestObjectPytestPlugin(testobject_username, testobject_api_key, testobject_suite_id),'testobject_helper')
 
