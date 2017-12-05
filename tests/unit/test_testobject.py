@@ -3,12 +3,14 @@
 import pytest
 from _pytest.main import EXIT_INTERRUPTED
 
+
 @pytest.mark.smoke
 @pytest.mark.parametrize("flags",
-    ["--to-username",
-    "--to-api-key",
-    "--to-suite-id"]
-)
+                         ["--to-username",
+                          "--to-api-key",
+                          "--to-suite-id"
+                          ]
+                         )
 def test_required_flag_output(testdir, flags):
     ''' Verifies required flags fail if no input is given '''
 
@@ -19,6 +21,7 @@ def test_required_flag_output(testdir, flags):
     result.stderr.fnmatch_lines([
         '*error: argument {}: expected one argument'.format(flags)
     ])
+
 
 @pytest.mark.smoke
 def test_help_message(testdir):
@@ -36,4 +39,3 @@ def test_help_message(testdir):
         '*TestObject Suite ID that will be used'
 
     ])
-

@@ -8,8 +8,10 @@ import logging
 
 log = logging.getLogger(__name__)
 
+
 class TestObjectError(Exception):
     pass
+
 
 class TestObjectCredentialError(Exception):
     pass
@@ -28,10 +30,10 @@ def pytest_addoption(parser):
                     metavar='TO_API_KEY',
                     help='TestObject project API KEY')
     group.addoption('--to-suite-id',
-                action='store',
-                dest='testobject_suite_id',
-                metavar='TO_SUITE_ID',
-                help='TestObject Suite ID that will be used')
+                    action='store',
+                    dest='testobject_suite_id',
+                    metavar='TO_SUITE_ID',
+                    help='TestObject Suite ID that will be used')
 
 
 def pytest_configure(config):
@@ -40,23 +42,34 @@ def pytest_configure(config):
     testobject_api_key = None
     testobject_suite_id = None
 
-    if not (config.option.help or config.option.showfixtures or config.option.markers):
+    if not (config.option.help or config.option.showfixtures or
+            config.option.markers):
         if config.getoption('testobject_username'):
             testobject_username = config.getoption('testobject_username')
-            log.debug("Grabbing {} from flag. Result: {}".format("testobject_username",testobject_username))
+            log.debug("Grabbing {} from flag."
+                      " Result: {}".format("testobject_username",
+                                           testobject_username))
 
         if config.getoption('testobject_api_key'):
             testobject_api_key = config.getoption('testobject_api_key')
-            log.debug("Grabbing {} from flag. Result: {}".format("testobject_api_key",testobject_api_key))
-            
+            log.debug("Grabbing {} from flag."
+                      " Result: {}".format("testobject_api_key",
+                                           testobject_api_key))
 
         if config.getoption('testobject_suite_id'):
             testobject_suite_id = config.getoption('testobject_suite_id')
-            log.debug("Grabbing {} from flag. Result: {}".format("testobject_suite_id",testobject_suite_id))
+            log.debug("Grabbing {} from flag."
+                      " Result: {}".format("testobject_suite_id",
+                                           testobject_suite_id))
 
-        if (testobject_username and testobject_api_key and testobject_suite_id):
+        if (testobject_username and testobject_api_key and
+           testobject_suite_id):
 
-            assert config.pluginmanager.register(TestObjectPytestPlugin(testobject_username, testobject_api_key, testobject_suite_id),'testobject_helper')
+            assert config.pluginmanager.register(
+                TestObjectPytestPlugin(testobject_username, testobject_api_key,
+                                       testobject_suite_id),
+                'testobject_helper')
+
 
 class TestObjectPytestPlugin(object):
     def __init__(self, username, api_key, suite_id):
@@ -78,29 +91,29 @@ class TestObjectPytestPlugin(object):
             for datacenter in datacenter_ids:
                 for device_descriptor in datacenter['deviceDescriptorIds']:
                     device_descriptors = {}
-                    device_descriptors['dataCenterId'] = datacenter['dataCenterId']
+                    device_descriptors['dataCenterId'] = \
+                        datacenter['dataCenterId']
                     device_descriptors['deviceId'] = device_descriptor
                     devices.append(device_descriptors)
             log.debug("FORMATTED DEVICES ARE:")
             log.debug(devices)
-            
+
             return devices
         else:
             raise TestObjectError
 
     def pytest_generate_tests(self, metafunc):
-        #Parametrize test and create test_config
+        # Parametrize test and create test_config
         log.debug(metafunc.fixturenames)
         if "to_driver" in metafunc.fixturenames:
             metafunc.parametrize("test_config", self.devices, scope="function")
-
 
     @pytest.fixture(scope='class')
     def to_suite(self, request):
 
         class_name = request.node.name
         log.debug("Class name is: {}".format(class_name))
-        test_names = set() # To avoid grabbing test names multiple times
+        test_names = set()  # To avoid grabbing test names multiple times
 
         for item in request.session.items:
             if item.originalname not in test_names:
@@ -113,7 +126,7 @@ class TestObjectPytestPlugin(object):
             test_request["className"] = class_name
             test_request["methodName"] = test
             for device in self.devices:
-                temp_request = {} # temporary dict to add two other dicts
+                temp_request = {}  # temporary dict to add two other dicts
                 temp_request.update(test_request)
                 temp_request.update(device)
                 suite_request.append(temp_request)
@@ -129,23 +142,25 @@ class TestObjectPytestPlugin(object):
             response = suite.json()
             suite_report_id = response['id']
             for test in response['testReports']:
-                
+
                 test_id = test['id']
                 class_name = test['test']['className']
                 method_name = test['test']['methodName']
                 device_id = test['test']['deviceId']
                 data_center_id = test['test']['dataCenterId']
-                
-                test_report = TestReport(class_name, method_name, device_id, data_center_id, test_id)
+
+                test_report = TestReport(class_name, method_name, device_id,
+                                         data_center_id, test_id)
                 test_list.append(test_report)
 
-            self.suite_report = SuiteReport(suite_report_id, test_list, self.api_key)
+            self.suite_report = SuiteReport(suite_report_id, test_list,
+                                            self.api_key)
 
         else:
             raise TestObjectError(suite.reason, suite.request.body)
 
         # request.instance.suite_report = self.suite_report
-        
+
         yield self.suite_report
 
         to_instance.suites.stop_suite(self.suite_id, suite_report_id)
@@ -167,9 +182,8 @@ class TestObjectPytestPlugin(object):
         log.debug(device_id)
         log.debug(data_center_id)
 
-
-        test_report = to_suite.find_test_report(class_name, method_name, device_id, data_center_id)
-
+        test_report = to_suite.find_test_report(class_name, method_name,
+                                                device_id, data_center_id)
 
         if data_center_id == 'US':
             url = 'https://us1.appium.testobject.com/wd/hub'
@@ -192,9 +206,7 @@ class TestObjectPytestPlugin(object):
 
             yield browser
 
-
-
-        #ADD FINALIZER INSTEAD OF YIELD
+        # ADD FINALIZER INSTEAD OF YIELD
             def teardown():
                 browser.quit()
             log.debug("Tearing test down")
@@ -202,10 +214,10 @@ class TestObjectPytestPlugin(object):
         else:
             log.debug("Couldn't find a match")
 
-
         # Grab test config
         # Grab suite_report and call find_test_report
         # Start remote web driver and yield it
+
 
 class SuiteReport(object):
 
@@ -214,30 +226,35 @@ class SuiteReport(object):
         self.test_reports = test_reports
         self.api_key = api_key
 
-    def find_test_report(self, class_name, method_name, device_id, data_center_id):
+    def find_test_report(self, class_name, method_name,
+                         device_id, data_center_id):
         for test_report in self.test_reports:
             test_class_name = test_report.get_class_name()
             test_method_name = test_report.get_method_name()
             test_device_id = test_report.get_device_id()
             test_data_center_id = test_report.get_data_center_id()
 
+            if (test_class_name == class_name and
+                    test_method_name == method_name and
+                    test_device_id == device_id and
+                    test_data_center_id == data_center_id):
 
-            if test_class_name == class_name and test_method_name == method_name and test_device_id == device_id and test_data_center_id == data_center_id:
                 log.debug("Match found {}".format(test_report))
                 return test_report
 
         return None
 
+
 class TestReport(object):
 
-    def __init__(self, class_name, method_name, device_id, data_center_id, test_report_id):
+    def __init__(self, class_name, method_name, device_id,
+                 data_center_id, test_report_id):
 
         self.class_name = class_name
         self.method_name = method_name
         self.device_id = device_id
         self.data_center_id = data_center_id
         self.test_report_id = test_report_id
-
 
     def get_id(self):
         return self.test_report_id
@@ -253,8 +270,3 @@ class TestReport(object):
 
     def get_data_center_id(self):
         return self.data_center_id
-
-
-
-
-
