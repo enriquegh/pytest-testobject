@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 
 def test_driver_suite_setup(testdir):
