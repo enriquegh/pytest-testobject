@@ -3,6 +3,7 @@
 import pytest
 from _pytest.main import EXIT_INTERRUPTED
 
+@pytest.mark.smoke
 @pytest.mark.parametrize("flags",
     ["--to-username",
     "--to-api-key",
@@ -19,6 +20,7 @@ def test_required_flag_output(testdir, flags):
         '*error: argument {}: expected one argument'.format(flags)
     ])
 
+@pytest.mark.smoke
 def test_help_message(testdir):
     result = testdir.runpytest(
         '--help',
