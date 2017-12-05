@@ -1,0 +1,10 @@
+site_name: pytest-testobject
+site_description: Plugin to use TestObject Suites with Pytest
+site_author: Enrique Gonzalez
+
+theme: readthedocs
+
+repo_url: https://github.com/enriquegh/pytest-testobject
+
+pages:
+- Home: index.md
