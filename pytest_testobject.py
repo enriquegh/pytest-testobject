@@ -85,15 +85,13 @@ class TestObjectPytestPlugin(object):
         self.username = username
         self.api_key = api_key
         self.suite_id = suite_id
+        self.to_api = to.TestObject(self.username, self.api_key)
         self.devices = self.get_devices()
         self.suite_report = None
-        self.to_api = to.TestObject(self.username, self.api_key)
 
     def get_devices(self):
 
-        testobject = to.TestObject(self.username, self.api_key)
-
-        response = testobject.suites.get_devices_ids(self.suite_id)
+        response = self.to_api.suites.get_devices_ids(self.suite_id)
 
         if response.ok:
             devices = []
@@ -150,9 +148,7 @@ class TestObjectPytestPlugin(object):
                 suite_request.append(temp_request)
         log.debug("Suite request is: {}".format(suite_request))
 
-        to_instance = to.TestObject(self.username, self.api_key)
-
-        suite = to_instance.suites.start_suite(self.suite_id, suite_request)
+        suite = self.to_api.suites.start_suite(self.suite_id, suite_request)
 
         if suite.ok:
             log.debug("Suite returned successfully")
@@ -179,7 +175,7 @@ class TestObjectPytestPlugin(object):
 
         yield self.suite_report
 
-        to_instance.suites.stop_suite(self.suite_id, suite_report_id)
+        self.to_api.suites.stop_suite(self.suite_id, suite_report_id)
 
     @pytest.fixture
     def to_driver(self, request, test_config, to_suite, testobject_api, to_suite_id):
