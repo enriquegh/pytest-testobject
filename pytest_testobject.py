@@ -71,6 +71,15 @@ def pytest_configure(config):
                 'testobject_helper')
 
 
+@pytest.hookimpl(hookwrapper=True, tryfirst=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    rep = outcome.get_result()
+    setattr(item, "rep_" + rep.when, rep)
+
+    # return rep
+
+
 class TestObjectPytestPlugin(object):
     def __init__(self, username, api_key, suite_id):
         self.username = username
@@ -78,6 +87,7 @@ class TestObjectPytestPlugin(object):
         self.suite_id = suite_id
         self.devices = self.get_devices()
         self.suite_report = None
+        self.to_api = to.TestObject(self.username, self.api_key)
 
     def get_devices(self):
 
@@ -107,6 +117,14 @@ class TestObjectPytestPlugin(object):
         log.debug(metafunc.fixturenames)
         if "to_driver" in metafunc.fixturenames:
             metafunc.parametrize("test_config", self.devices, scope="function")
+
+    @pytest.fixture(scope='class')
+    def testobject_api(self):
+        return self.to_api
+
+    @pytest.fixture(scope='class')
+    def to_suite_id(self):
+        return self.suite_id
 
     @pytest.fixture(scope='class')
     def to_suite(self, request):
@@ -159,14 +177,12 @@ class TestObjectPytestPlugin(object):
         else:
             raise TestObjectError(suite.reason, suite.request.body)
 
-        # request.instance.suite_report = self.suite_report
-
         yield self.suite_report
 
         to_instance.suites.stop_suite(self.suite_id, suite_report_id)
 
     @pytest.fixture
-    def to_driver(self, request, test_config, to_suite):
+    def to_driver(self, request, test_config, to_suite, testobject_api, to_suite_id):
 
         desired_caps = {}
         url = None
@@ -206,17 +222,21 @@ class TestObjectPytestPlugin(object):
 
             yield browser
 
-        # ADD FINALIZER INSTEAD OF YIELD
+            is_test_passed = request.node.rep_call.passed
+
+            log.debug("{}: {}".format(method_name,
+                                      str(is_test_passed)))
+
+            testobject_api.suites.stop_suite_test(to_suite_id,
+                                          to_suite.suite_report_id,
+                                          test_report_id, is_test_passed)
+
             def teardown():
                 browser.quit()
             log.debug("Tearing test down")
             request.addfinalizer(teardown)
         else:
             log.debug("Couldn't find a match")
-
-        # Grab test config
-        # Grab suite_report and call find_test_report
-        # Start remote web driver and yield it
 
 
 class SuiteReport(object):
