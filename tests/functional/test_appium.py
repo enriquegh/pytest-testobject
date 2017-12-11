@@ -31,6 +31,12 @@ def test_driver_suite_setup(testdir):
                 assert to_driver.title == ("TestObject – Android and iOS "
                                            "Mobile App Testing Made Easy")
 
+            @pytest.mark.xfail
+            def test_guinea_pig(self, to_driver):
+
+                to_driver.get("https://saucelabs.com/test/guinea-pig")
+                id_element = to_driver.find_element_by_id('i_am_an_id')
+                assert i_am_an_id != "I am a link"
 
     """)
 
