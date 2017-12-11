@@ -85,13 +85,13 @@ class TestObjectPytestPlugin(object):
         self.username = username
         self.api_key = api_key
         self.suite_id = suite_id
-        self.to_api = to.TestObject(self.username, self.api_key)
+        self.api = to.TestObject(self.username, self.api_key)
         self.devices = self.get_devices()
         self.suite_report = None
 
     def get_devices(self):
 
-        response = self.to_api.suites.get_devices_ids(self.suite_id)
+        response = self.api.suites.get_devices_ids(self.suite_id)
 
         if response.ok:
             devices = []
@@ -117,8 +117,8 @@ class TestObjectPytestPlugin(object):
             metafunc.parametrize("test_config", self.devices, scope="function")
 
     @pytest.fixture(scope='class')
-    def testobject_api(self):
-        return self.to_api
+    def to_api(self):
+        return self.api
 
     @pytest.fixture(scope='class')
     def to_suite_id(self):
@@ -148,7 +148,7 @@ class TestObjectPytestPlugin(object):
                 suite_request.append(temp_request)
         log.debug("Suite request is: {}".format(suite_request))
 
-        suite = self.to_api.suites.start_suite(self.suite_id, suite_request)
+        suite = self.api.suites.start_suite(self.suite_id, suite_request)
 
         if suite.ok:
             log.debug("Suite returned successfully")
@@ -175,10 +175,10 @@ class TestObjectPytestPlugin(object):
 
         yield self.suite_report
 
-        self.to_api.suites.stop_suite(self.suite_id, suite_report_id)
+        self.api.suites.stop_suite(self.suite_id, suite_report_id)
 
     @pytest.fixture
-    def to_driver(self, request, test_config, to_suite, testobject_api, to_suite_id):
+    def to_driver(self, request, test_config, to_suite, to_api, to_suite_id):
 
         desired_caps = {}
         url = None
@@ -223,7 +223,7 @@ class TestObjectPytestPlugin(object):
             log.debug("{}: {}".format(method_name,
                                       str(is_test_passed)))
 
-            testobject_api.suites.stop_suite_test(to_suite_id,
+            to_api.suites.stop_suite_test(to_suite_id,
                                           to_suite.suite_report_id,
                                           test_report_id, is_test_passed)
 
