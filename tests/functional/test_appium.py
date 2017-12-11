@@ -21,7 +21,7 @@ def test_driver_suite_setup(testdir):
             def test_saucelabs(self, to_driver):
 
                 to_driver.get("https://saucelabs.com")
-                assert to_driver.title == ("Cross Browser Testing, Selenium"
+                assert to_driver.title == ("Cross Browser Testing, Selenium "
                                            "Testing, and Mobile Testing "
                                            "| Sauce Labs")
 
