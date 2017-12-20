@@ -20,27 +20,56 @@ This `Pytest`_ plugin was generated with `Cookiecutter`_ along with `@hackebrot`
 Features
 --------
 
-* TODO
+* Use TestObject's Suites feature to group types of tests.
+* Run tests with different iOS and Android devices without re-writing code
 
 
 Requirements
 ------------
 
-* TODO
+See `requirements.txt`_
+
+To run from source install via:
+::
+
+ $ pip install -r requirements.txt
 
 
 Installation
 ------------
 
-You can install "pytest-testobject" via `pip`_ from `PyPI`_::
+You can install "pytest-testobject" via `pip`_ from `PyPI`_
+::
 
-    $ pip install pytest-testobject
+ $ pip install pytest-testobject
 
 
 Usage
 -----
 
-* TODO
+Add your credentials via the following flags:
+
+::
+
+ --to-username=TO_USERNAME
+ --to-api-key=TO_API_KEY
+ --to-suite-id=TO_SUITE_ID
+
+
+For these to work your tests need to be on a class.
+
+Add the fixtures to_suite and to_driver to your class.
+Then use the to_driver fixture on your tests as your driver instance.
+
+So it'll look something like this:
+
+.. code-block:: python
+
+    @pytest.mark.usefixtures("to_suite","to_driver")
+    class TestTODriver(object):
+
+        def test_saucelabs(self, to_driver):
+            #Do stuff like to_driver.get(...)
 
 Contributing
 ------------
@@ -70,3 +99,4 @@ If you encounter any problems, please `file an issue`_ along with a detailed des
 .. _`tox`: https://tox.readthedocs.io/en/latest/
 .. _`pip`: https://pypi.python.org/pypi/pip/
 .. _`PyPI`: https://pypi.python.org/pypi
+.. _`requirements.txt`: requirements.txt
