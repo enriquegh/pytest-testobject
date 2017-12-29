@@ -8,4 +8,7 @@ repo_url: https://github.com/enriquegh/pytest-testobject
 
 pages:
 - Home: index.md
+- User Guide: user-guide.md
+- Development: development.md
+
 copyright: Copyright &copy; 2017 <a href="https://github.com/enriquegh">Enrique Gonzalez</a>
