@@ -6,14 +6,14 @@ environment:
     - PYTHON: "C:\\Python27"
       TOX_ENV: "py27"
 
-    - PYTHON: "C:\\Python33"
-      TOX_ENV: "py33"
-
     - PYTHON: "C:\\Python34"
       TOX_ENV: "py34"
 
     - PYTHON: "C:\\Python35"
       TOX_ENV: "py35"
+
+    - PYTHON: "C:\\Python36"
+      TOX_ENV: "py36"
 
 
 init:
@@ -28,7 +28,7 @@ install:
 build: false  # Not a C# project, build stuff at the test step instead.
 
 test_script:
-  - "%PYTHON%/Scripts/tox -e %TOX_ENV%"
+  - "%PYTHON%/Scripts/tox -e %TOX_ENV% -- -m 'smoke'"
 
 after_test:
   - "%PYTHON%/python setup.py bdist_wheel"
