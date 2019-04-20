@@ -27,9 +27,8 @@ def test_driver_suite_setup(testdir):
 
             def test_testobject(self, to_driver):
 
-                to_driver.get("https://testobject.com")
-                assert to_driver.title == ("TestObject – Android and iOS "
-                                           "Mobile App Testing Made Easy")
+                to_driver.get("https://app.testobject.com")
+                assert to_driver.title == ("Sign In | Sauce Labs")
 
             @pytest.mark.xfail
             def test_guinea_pig(self, to_driver):
