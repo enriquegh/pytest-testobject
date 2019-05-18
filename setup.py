@@ -23,7 +23,9 @@ setup(
     description='Plugin to use TestObject Suites with Pytest',
     long_description=read('README.rst'),
     py_modules=['pytest_testobject'],
-    install_requires=['pytest>=3.1.1'],
+    install_requires=['pytest>=3.1.1',
+                      'Appium-Python-Client',
+                      'testobject>=0.3.0'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Framework :: Pytest',
