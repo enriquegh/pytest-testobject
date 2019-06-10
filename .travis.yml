@@ -1,8 +1,5 @@
-# Config file for automatic testing at travis-ci.org
-
 sudo: false
 language: python
-
 matrix:
     include:
       - python: 2.7
@@ -17,16 +14,21 @@ matrix:
         sudo: true
       - python: 3.6
         env: TOX_ENV=flake8
-
 install:
   - pip install tox
-
 script:
   - tox -e $TOX_ENV -- -m 'smoke'
-
 before_cache:
   - rm -rf $HOME/.cache/pip/log
-
 cache:
   directories:
-    - $HOME/.cache/pip
+  - "$HOME/.cache/pip"
+deploy:
+  provider: pypi
+  user: enriquegh
+  password:
+    secure: MR27NzooE9zYjQRZ5fslc+mW2nd5n+COEbskbK7MH0min/qSltAJ72/bp+n05ztKmQtSc3Y59cS4pXpGaC7hMxyF+m68AlL1NUid3EnXzTwvVHVgWW8NfZ5tvGqKvhAc50e2SXyuCBOmjuX4M1d+Z/n1uxI/LoxGsZ8cYc0UkAuDWXerN3KjUtmP3trKiK+Qg5a7OY1ytarai1c/s7AiX4hwj84PlUXUWjTTpv8opDWJwMiMJdE1e0mTgw72i9e2uC7p2InigA3aPlMxaw4npu617fKpA1FDgCEu+cRkP5rdoA1+tlVriCUUmUQEXhQ1SDgzv+pzHHn5dgUtHpqvG5gdLLovNWsCQxSrBeFV65CcPH6ebi69MbTOVMub8xAu5Qd3rC5ebqV2a2A6eiUQs4NogtwPqMO7Ys9ual9TkA258SBrJSdC5FXHiAcfGSY+EihEjQRKo7NNITjgXG4SjCY4HDmoiQPF5W9jzdQjx52VGl9zSl3NJgJ/RMnghxv3h8OPsto5Bi9/BHF838lNLzkwt7DiVj7a5WtwLWsHfRa75Fg7SJKfFWfAn5otph9JKdM8w4rjZmcHAlrU5zMs+i9zjxLnhOleonWv7dmUlJiw1qPZgOoZMmp4M+KvspF3CLlZio393Ki+ojZghtNWto0lj9ziD5dGdhdUcb38xCM=
+  on:
+    tags: true
+  distributions: "sdist bdist_wheel"
+  skip_existing: true
