@@ -13,7 +13,7 @@ def read(fname):
 
 setup(
     name='pytest-testobject',
-    version='0.1.0',
+    version='1.0.0',
     author='Enrique Gonzalez',
     author_email='egonzalezh94@gmail.com',
     maintainer='Enrique Gonzalez',
