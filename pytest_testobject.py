@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-import appium
+from appium import webdriver
 import testobject as to
 
 import logging
@@ -214,7 +214,7 @@ class TestObjectPytestPlugin(object):
             log.debug(desired_caps)
             log.debug("starting remote webdriver...")
 
-            browser = appium.webdriver.Remote(url, desired_caps)
+            browser = webdriver.Remote(url, desired_caps)
 
             yield browser
 
