@@ -1,4 +1,4 @@
-Appium-Python-Client==0.49
+Appium-Python-Client==0.50
 attrs==19.3.0
 certifi==2019.11.28
 chardet==3.0.4
