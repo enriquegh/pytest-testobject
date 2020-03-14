@@ -1,5 +1,5 @@
 =================
-pytest-testobject
+DEPRECATED: pytest-testobject
 =================
 
 .. image:: https://travis-ci.org/enriquegh/pytest-testobject.svg?branch=master
@@ -11,6 +11,8 @@ pytest-testobject
     :alt: See Build Status on AppVeyor
 
 Plugin to use TestObject Suites with Pytest
+
+This project is not actively maintained as TestObject's Suites are not very used at Sauce and will be deprecated themselves at some point.
 
 ----
 
